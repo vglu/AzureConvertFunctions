@@ -11,8 +11,13 @@ Production: https://<function-app-name>.azurewebsites.net/api
 
 All endpoints support function-level authentication. Configure authentication level in `function.json`:
 - `anonymous` - No authentication required
-- `function` - Function key required
+- `function` - Function key required (passed as `code` query parameter)
 - `admin` - Master key required
+
+**Note:** When using `function` or `admin` authentication level, the authorization code should be passed as an optional `code` query parameter:
+```
+POST /api/csv2json?code=your-function-key
+```
 
 ## Endpoints
 
@@ -20,11 +25,14 @@ All endpoints support function-level authentication. Configure authentication le
 
 **Endpoint**: `POST /api/csv2json`
 
+**Query Parameters**:
+- `code` (optional) - Azure Function authorization code
+
 **Description**: Converts CSV data to JSON format
 
 **Request**:
 ```http
-POST /api/csv2json HTTP/1.1
+POST /api/csv2json?code=your-code HTTP/1.1
 Content-Type: text/csv
 Content-Length: <length>
 
@@ -73,11 +81,14 @@ Content-Type: application/json
 
 **Endpoint**: `POST /api/json2csv`
 
+**Query Parameters**:
+- `code` (optional) - Azure Function authorization code
+
 **Description**: Converts JSON data to CSV format
 
 **Request**:
 ```http
-POST /api/json2csv HTTP/1.1
+POST /api/json2csv?code=your-code HTTP/1.1
 Content-Type: application/json
 
 [
@@ -116,11 +127,14 @@ JSON parsing error: Expecting value: line 1 column 1 (char 0)
 
 **Endpoint**: `POST /api/dbf2json`
 
+**Query Parameters**:
+- `code` (optional) - Azure Function authorization code
+
 **Description**: Converts DBF (dBase) file to JSON format
 
 **Request**:
 ```http
-POST /api/dbf2json HTTP/1.1
+POST /api/dbf2json?code=your-code HTTP/1.1
 Content-Type: application/x-dbf
 Content-Length: <length>
 
@@ -181,11 +195,14 @@ curl -X POST https://func-convert-app.azurewebsites.net/api/dbf2json \
 
 **Endpoint**: `POST /api/md2html`
 
+**Query Parameters**:
+- `code` (optional) - Azure Function authorization code
+
 **Description**: Converts Markdown text to HTML
 
 **Request**:
 ```http
-POST /api/md2html HTTP/1.1
+POST /api/md2html?code=your-code HTTP/1.1
 Content-Type: text/markdown
 
 # Hello World
@@ -223,11 +240,14 @@ Content-Type: text/html
 
 **Endpoint**: `POST /api/html2pdf`
 
+**Query Parameters**:
+- `code` (optional) - Azure Function authorization code
+
 **Description**: Converts HTML content to PDF document
 
 **Request**:
 ```http
-POST /api/html2pdf HTTP/1.1
+POST /api/html2pdf?code=your-code HTTP/1.1
 Content-Type: text/html
 
 <html>
@@ -263,11 +283,14 @@ Content-Disposition: attachment; filename=converted.pdf
 
 **Endpoint**: `POST /api/url2pdf`
 
+**Query Parameters**:
+- `code` (optional) - Azure Function authorization code
+
 **Description**: Converts web page URL to PDF document
 
 **Request**:
 ```http
-POST /api/url2pdf HTTP/1.1
+POST /api/url2pdf?code=your-code HTTP/1.1
 Content-Type: text/plain
 
 https://example.com
@@ -316,13 +339,14 @@ Error fetching URL: Connection timeout
 
 **Request**:
 ```http
-POST /api/url2jpg?width=1920&height=1080 HTTP/1.1
+POST /api/url2jpg?code=your-code&width=1920&height=1080 HTTP/1.1
 Content-Type: text/plain
 
 https://example.com
 ```
 
 **Query Parameters**:
+- `code` (optional) - Azure Function authorization code
 - `width` (optional): Screenshot width in pixels (default: 1920)
 - `height` (optional): Screenshot height in pixels (default: 1080)
 

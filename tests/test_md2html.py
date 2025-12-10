@@ -92,3 +92,5 @@ def test_md2html_with_special_characters():
     # Специальные символы должны быть экранированы
     assert "Заголовок" in html_content
 
+
+

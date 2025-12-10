@@ -29,6 +29,17 @@
         "summary": "Convert CSV to JSON",
         "description": "Accepts CSV data and returns JSON array of objects",
         "operationId": "csv2json",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "description": "Optional Azure Function authorization code",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -94,6 +105,17 @@
         "summary": "Convert JSON to CSV",
         "description": "Accepts JSON object or array of objects and returns CSV data",
         "operationId": "json2csv",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "description": "Optional Azure Function authorization code",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -167,6 +189,17 @@
         "summary": "Convert HTML to PDF",
         "description": "Accepts HTML data and returns PDF document in binary format",
         "operationId": "html2pdf",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "description": "Optional Azure Function authorization code",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -226,6 +259,17 @@
         "summary": "Convert URL to PDF",
         "description": "Fetches HTML content from URL and returns PDF document in binary format",
         "operationId": "url2pdf",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "description": "Optional Azure Function authorization code",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -285,6 +329,17 @@
         "summary": "Convert DBF to JSON",
         "description": "Accepts DBF (dBase) file in binary format and returns JSON array of objects",
         "operationId": "dbf2json",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "description": "Optional Azure Function authorization code",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -372,6 +427,15 @@
         },
         "parameters": [
           {
+            "name": "code",
+            "in": "query",
+            "description": "Optional Azure Function authorization code",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "width",
             "in": "query",
             "description": "Screenshot width in pixels (default: 1920)",
@@ -440,6 +504,17 @@
         "summary": "Convert Markdown to HTML",
         "description": "Accepts Markdown data and returns full HTML document with styles",
         "operationId": "md2html",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "description": "Optional Azure Function authorization code",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -498,8 +573,21 @@
           }
         }
       }
+    },
+    "securitySchemes": {
+      "FunctionKey": {
+        "type": "apiKey",
+        "name": "code",
+        "in": "query",
+        "description": "Azure Function authorization code (optional)"
+      }
     }
   },
+  "security": [
+    {
+      "FunctionKey": []
+    }
+  ],
   "tags": [
     {
       "name": "Conversion",

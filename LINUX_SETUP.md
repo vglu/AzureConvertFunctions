@@ -82,3 +82,5 @@ Azure Functions на Linux работают так же, как на Windows. У
 - Все зависимости установлены в `requirements.txt`
 - Системные зависимости для Playwright установлены в Docker образе (если используете custom image)
 
+
+

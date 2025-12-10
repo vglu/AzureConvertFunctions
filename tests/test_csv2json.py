@@ -82,3 +82,5 @@ def test_csv2json_single_row():
     assert len(parsed) == 1
     assert parsed[0]["name"] == "Иван"
 
+
+

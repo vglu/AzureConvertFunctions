@@ -640,25 +640,27 @@ az functionapp function show \
 
 **CSV to JSON:**
 ```bash
-curl -X POST https://func-convert-app.azurewebsites.net/api/csv2json \
+curl -X POST "https://func-convert-app.azurewebsites.net/api/csv2json?code=your-code" \
   -H "Content-Type: text/csv" \
   -d "name,age\nJohn,25\nJane,30"
 ```
 
 **JSON to CSV:**
 ```bash
-curl -X POST https://func-convert-app.azurewebsites.net/api/json2csv \
+curl -X POST "https://func-convert-app.azurewebsites.net/api/json2csv?code=your-code" \
   -H "Content-Type: application/json" \
   -d '[{"name":"John","age":25},{"name":"Jane","age":30}]'
 ```
 
 **URL to PDF:**
 ```bash
-curl -X POST https://func-convert-app.azurewebsites.net/api/url2pdf \
+curl -X POST "https://func-convert-app.azurewebsites.net/api/url2pdf?code=your-code" \
   -H "Content-Type: text/plain" \
   -d "https://example.com" \
   --output result.pdf
 ```
+
+**Note:** The `code` parameter is optional. If your function uses `anonymous` authentication level, you can omit it. For `function` or `admin` levels, include the function key or master key as the `code` parameter.
 
 **Swagger UI:**
 Откройте в браузере:

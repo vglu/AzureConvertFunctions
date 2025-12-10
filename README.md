@@ -16,13 +16,16 @@
 
 **Endpoint:** `POST /api/csv2json`
 
+**Query Parameters:**
+- `code` (optional) - код авторизации Azure Function
+
 **Request Body:** CSV данные в виде строки
 
 **Response:** JSON массив объектов
 
 **Пример:**
 ```bash
-curl -X POST http://localhost:7071/api/csv2json \
+curl -X POST "http://localhost:7071/api/csv2json?code=your-code" \
   -H "Content-Type: text/csv" \
   -d "name,age,city
 Иван,25,Москва
@@ -34,13 +37,16 @@ curl -X POST http://localhost:7071/api/csv2json \
 
 **Endpoint:** `POST /api/html2pdf`
 
+**Query Parameters:**
+- `code` (optional) - код авторизации Azure Function
+
 **Request Body:** HTML данные в виде строки
 
 **Response:** PDF файл в бинарном формате
 
 **Пример:**
 ```bash
-curl -X POST http://localhost:7071/api/html2pdf \
+curl -X POST "http://localhost:7071/api/html2pdf?code=your-code" \
   -H "Content-Type: text/html" \
   -d "<html><body><h1>Привет</h1></body></html>"
 ```
@@ -49,6 +55,9 @@ curl -X POST http://localhost:7071/api/html2pdf \
 Конвертирует DBF (dBase) файл в JSON формат.
 
 **Endpoint:** `POST /api/dbf2json`
+
+**Query Parameters:**
+- `code` (optional) - код авторизации Azure Function
 
 **Request Body:** DBF файл в бинарном формате
 
@@ -59,7 +68,7 @@ curl -X POST http://localhost:7071/api/html2pdf \
 **Пример:**
 ```bash
 # Загрузить DBF файл
-curl -X POST http://localhost:7071/api/dbf2json \
+curl -X POST "http://localhost:7071/api/dbf2json?code=your-code" \
   -H "Content-Type: application/x-dbf" \
   --data-binary "@data.dbf"
 ```
@@ -71,13 +80,16 @@ curl -X POST http://localhost:7071/api/dbf2json \
 
 **Endpoint:** `POST /api/json2csv`
 
+**Query Parameters:**
+- `code` (optional) - код авторизации Azure Function
+
 **Request Body:** JSON объект или массив объектов
 
 **Response:** CSV данные
 
 **Пример:**
 ```bash
-curl -X POST http://localhost:7071/api/json2csv \
+curl -X POST "http://localhost:7071/api/json2csv?code=your-code" \
   -H "Content-Type: application/json" \
   -d '[{"name":"Иван","age":25},{"name":"Мария","age":30}]'
 ```
@@ -87,21 +99,27 @@ curl -X POST http://localhost:7071/api/json2csv \
 
 **Endpoint:** `POST /api/md2html`
 
+**Query Parameters:**
+- `code` (optional) - код авторизации Azure Function
+
 **Request Body:** Markdown данные в виде строки
 
 **Response:** Полный HTML документ со стилями
 
 **Пример:**
 ```bash
-curl -X POST http://localhost:7071/api/md2html \
+curl -X POST "http://localhost:7071/api/md2html?code=your-code" \
   -H "Content-Type: text/markdown" \
   -d "# Heading\n\nThis is **bold** text."
 ```
 
-### 5. URL2PDF
+### 6. URL2PDF
 Конвертирует веб-страницу по URL в PDF документ. Поддерживает JavaScript рендеринг через Playwright.
 
 **Endpoint:** `POST /api/url2pdf`
+
+**Query Parameters:**
+- `code` (optional) - код авторизации Azure Function
 
 **Request Body:** URL в виде строки
 
@@ -109,7 +127,7 @@ curl -X POST http://localhost:7071/api/md2html \
 
 **Пример:**
 ```bash
-curl -X POST http://localhost:7071/api/url2pdf \
+curl -X POST "http://localhost:7071/api/url2pdf?code=your-code" \
   -H "Content-Type: text/plain" \
   -d "https://example.com"
 ```
@@ -119,7 +137,7 @@ curl -X POST http://localhost:7071/api/url2pdf \
 playwright install chromium
 ```
 
-### 8. URL2JPG
+### 7. URL2JPG
 Создает скриншот веб-страницы по URL и возвращает JPG изображение. Использует Playwright для рендеринга JavaScript.
 
 **Endpoint:** `POST /api/url2jpg`
@@ -127,6 +145,7 @@ playwright install chromium
 **Request Body:** URL в виде строки
 
 **Query Parameters:**
+- `code` (optional) - код авторизации Azure Function
 - `width` (optional) - ширина скриншота в пикселях (по умолчанию: 1920)
 - `height` (optional) - высота скриншота в пикселях (по умолчанию: 1080)
 
@@ -134,7 +153,7 @@ playwright install chromium
 
 **Пример:**
 ```bash
-curl -X POST "http://localhost:7071/api/url2jpg?width=1920&height=1080" \
+curl -X POST "http://localhost:7071/api/url2jpg?code=your-code&width=1920&height=1080" \
   -H "Content-Type: text/plain" \
   -d "https://example.com"
 ```

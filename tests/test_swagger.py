@@ -66,3 +66,5 @@ def test_swagger_ui_with_path():
     html_content = response.get_body().decode('utf-8')
     assert 'swagger-ui' in html_content
 
+
+
