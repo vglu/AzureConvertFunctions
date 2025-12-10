@@ -1,0 +1,509 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Azure Convert Functions API",
+    "description": "API for converting various data formats: CSV↔JSON, DBF→JSON, HTML→PDF, Markdown→HTML, URL→PDF, URL→JPG",
+    "version": "1.0.0",
+    "contact": {
+      "name": "API Support"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:7071/api",
+      "description": "Local development server"
+    },
+    {
+      "url": "https://{function-app-name}.azurewebsites.net/api",
+      "description": "Azure Function App",
+      "variables": {
+        "function-app-name": {
+          "default": "your-function-app-name"
+        }
+      }
+    }
+  ],
+  "paths": {
+    "/csv2json": {
+      "post": {
+        "summary": "Convert CSV to JSON",
+        "description": "Accepts CSV data and returns JSON array of objects",
+        "operationId": "csv2json",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "text/csv": {
+              "schema": {
+                "type": "string",
+                "example": "name,age,city\nJohn,25,New York\nJane,30,London"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful conversion",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  },
+                  "example": [
+                    {"name": "John", "age": "25", "city": "New York"},
+                    {"name": "Jane", "age": "30", "city": "London"}
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error: CSV content not provided",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/json2csv": {
+      "post": {
+        "summary": "Convert JSON to CSV",
+        "description": "Accepts JSON object or array of objects and returns CSV data",
+        "operationId": "json2csv",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    },
+                    "example": [
+                      {"name": "John", "age": 25, "city": "New York"},
+                      {"name": "Jane", "age": 30, "city": "London"}
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "example": {"name": "John", "age": 25, "city": "New York"}
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful conversion",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "example": "name,age,city\nJohn,25,New York\nJane,30,London"
+                }
+              }
+            },
+            "headers": {
+              "Content-Disposition": {
+                "schema": {
+                  "type": "string",
+                  "example": "attachment; filename=converted.csv"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error: JSON content not provided or invalid format",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/html2pdf": {
+      "post": {
+        "summary": "Convert HTML to PDF",
+        "description": "Accepts HTML data and returns PDF document in binary format",
+        "operationId": "html2pdf",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "text/html": {
+              "schema": {
+                "type": "string",
+                "example": "<html><body><h1>Hello</h1><p>This is a test document</p></body></html>"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful conversion",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            },
+            "headers": {
+              "Content-Disposition": {
+                "schema": {
+                  "type": "string",
+                  "example": "attachment; filename=converted.pdf"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error: HTML content not provided",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/url2pdf": {
+      "post": {
+        "summary": "Convert URL to PDF",
+        "description": "Fetches HTML content from URL and returns PDF document in binary format",
+        "operationId": "url2pdf",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "text/plain": {
+              "schema": {
+                "type": "string",
+                "example": "https://example.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful conversion",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            },
+            "headers": {
+              "Content-Disposition": {
+                "schema": {
+                  "type": "string",
+                  "example": "attachment; filename=converted.pdf"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error: URL not provided or failed to fetch",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dbf2json": {
+      "post": {
+        "summary": "Convert DBF to JSON",
+        "description": "Accepts DBF (dBase) file in binary format and returns JSON array of objects",
+        "operationId": "dbf2json",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-dbf": {
+              "schema": {
+                "type": "string",
+                "format": "binary",
+                "description": "DBF file in binary format"
+              }
+            },
+            "application/octet-stream": {
+              "schema": {
+                "type": "string",
+                "format": "binary",
+                "description": "DBF file in binary format"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful conversion",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "example": [
+                    {
+                      "NAME": "John",
+                      "AGE": 25,
+                      "CITY": "New York"
+                    },
+                    {
+                      "NAME": "Jane",
+                      "AGE": 30,
+                      "CITY": "London"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error: DBF file not provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error or invalid DBF file",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/url2jpg": {
+      "post": {
+        "summary": "Convert URL to JPG",
+        "description": "Captures screenshot of web page from URL and returns JPG image",
+        "operationId": "url2jpg",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "text/plain": {
+              "schema": {
+                "type": "string",
+                "example": "https://example.com"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "width",
+            "in": "query",
+            "description": "Screenshot width in pixels (default: 1920)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1920
+            }
+          },
+          {
+            "name": "height",
+            "in": "query",
+            "description": "Screenshot height in pixels (default: 1080)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1080
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful conversion",
+            "content": {
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            },
+            "headers": {
+              "Content-Disposition": {
+                "schema": {
+                  "type": "string",
+                  "example": "attachment; filename=screenshot.jpg"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error: URL not provided or invalid format",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error or Playwright not available",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/md2html": {
+      "post": {
+        "summary": "Convert Markdown to HTML",
+        "description": "Accepts Markdown data and returns full HTML document with styles",
+        "operationId": "md2html",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "text/markdown": {
+              "schema": {
+                "type": "string",
+                "example": "# Heading\n\nThis is **bold** text and *italic*.\n\n- List\n- Items"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful conversion",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string",
+                  "example": "<!DOCTYPE html><html><head><title>Converted Markdown</title></head><body><h1>Heading</h1><p>This is <strong>bold</strong> text</p></body></html>"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error: Markdown content not provided",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Error description"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Conversion",
+      "description": "Data format conversion functions"
+    }
+  ]
+}
