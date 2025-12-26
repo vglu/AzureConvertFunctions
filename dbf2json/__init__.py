@@ -1,40 +1,38 @@
+"""
+DBF to JSON conversion Azure Function
+"""
 import logging
 import json
 import azure.functions as func
-from io import BytesIO
 from dbfread import DBF
+from utils.exceptions import ValidationError, ProcessingError
+from utils.validation import validate_file_size
+from utils.logging_utils import create_logger_context, log_function_start, log_function_success, log_function_error
+from utils.file_utils import temporary_file
 
 
-def main(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info('DBF2JSON function processing request.')
-
-    try:
-        # Get DBF file data from request body
-        dbf_data = req.get_body()
-
-        if not dbf_data:
-            return func.HttpResponse(
-                "DBF file not provided",
-                status_code=400
-            )
-
-        # Create BytesIO object from binary data
-        dbf_buffer = BytesIO(dbf_data)
-
-        # Save to temporary file (DBF library requires file path)
-        import tempfile
-        import os
+def convert_dbf_to_json(dbf_data: bytes) -> str:
+    """
+    Convert DBF file data to JSON string
+    
+    Args:
+        dbf_data: DBF file data as bytes
         
-        temp_file = None
+    Returns:
+        JSON string with records
+        
+    Raises:
+        ProcessingError: If conversion fails
+    """
+    with temporary_file(suffix='.dbf') as temp_path:
         try:
-            # Create temporary file
-            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.dbf')
-            temp_file.write(dbf_data)
-            temp_file.close()
-
+            # Write DBF data to temporary file
+            with open(temp_path, 'wb') as f:
+                f.write(dbf_data)
+            
             # Read DBF file
-            table = DBF(temp_file.name, encoding='utf-8', load=True)
-
+            table = DBF(temp_path, encoding='utf-8', load=True)
+            
             # Convert to list of dictionaries
             records = []
             for record in table:
@@ -49,31 +47,87 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                     else:
                         record_dict[field_name] = value
                 records.append(record_dict)
-
+            
             # Convert to JSON
             json_result = json.dumps(records, ensure_ascii=False, indent=2, default=str)
+            
+            return json_result
+        except Exception as e:
+            raise ProcessingError(f"Failed to convert DBF to JSON: {str(e)}") from e
 
+
+def main(req: func.HttpRequest) -> func.HttpResponse:
+    """
+    Convert DBF file data to JSON format.
+    
+    Args:
+        req: Azure Function HTTP request containing DBF file data in body
+        
+    Returns:
+        HTTP response with JSON data (200) or error message (400/500)
+        
+    Example:
+        Request body: Binary DBF file data
+        Response: [{"field1": "value1", "field2": 123}, ...]
+    """
+    context = create_logger_context(req, 'dbf2json')
+    log_function_start(logging, context, 'DBF2JSON function processing request.')
+    
+    try:
+        # Get DBF file data from request body
+        dbf_data = req.get_body()
+        
+        if not dbf_data:
+            raise ValidationError("DBF file not provided")
+        
+        # Validate file size
+        try:
+            validate_file_size(dbf_data)
+        except ValidationError as e:
+            log_function_error(logging, context, e, 'File size validation failed')
             return func.HttpResponse(
-                json_result,
+                json.dumps({"error": str(e)}),
                 mimetype="application/json",
-                status_code=200
+                status_code=400
             )
-
-        finally:
-            # Clean up temporary file
-            if temp_file and os.path.exists(temp_file.name):
-                try:
-                    os.unlink(temp_file.name)
-                except Exception as e:
-                    logging.warning(f'Failed to delete temp file: {e}')
-
-    except Exception as e:
-        logging.error(f'Error converting DBF to JSON: {str(e)}')
+        
+        # Convert DBF to JSON
+        try:
+            json_result = convert_dbf_to_json(dbf_data)
+        except ProcessingError as e:
+            log_function_error(logging, context, e, 'DBF to JSON conversion failed')
+            return func.HttpResponse(
+                json.dumps({"error": str(e)}),
+                mimetype="application/json",
+                status_code=500
+            )
+        
+        log_function_success(logging, context, 'DBF2JSON function completed successfully')
+        
         return func.HttpResponse(
-            json.dumps({"error": f"Conversion error: {str(e)}"}),
+            json_result,
+            mimetype="application/json",
+            status_code=200
+        )
+    
+    except ValidationError as e:
+        log_function_error(logging, context, e, 'Validation error')
+        return func.HttpResponse(
+            json.dumps({"error": str(e)}),
+            mimetype="application/json",
+            status_code=400
+        )
+    except ProcessingError as e:
+        log_function_error(logging, context, e, 'Processing error')
+        return func.HttpResponse(
+            json.dumps({"error": str(e)}),
             mimetype="application/json",
             status_code=500
         )
-
-
-
+    except Exception as e:
+        log_function_error(logging, context, e, 'Unexpected error')
+        return func.HttpResponse(
+            json.dumps({"error": "Internal server error"}),
+            mimetype="application/json",
+            status_code=500
+        )

@@ -7,4 +7,5 @@ pytest==7.4.3
 requests==2.31.0
 playwright==1.57.0
 dbfread==2.0.7
+chardet==5.2.0
 

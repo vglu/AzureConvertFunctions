@@ -1,79 +1,74 @@
+"""
+Markdown to HTML conversion Azure Function
+"""
 import logging
-import markdown
-import bleach
 import azure.functions as func
+from utils.exceptions import ValidationError, ProcessingError
+from utils.validation import validate_request_size, validate_markdown_content
+from utils.logging_utils import create_logger_context, log_function_start, log_function_success, log_function_error
+from utils.encoding import decode_request_body
+from .converter import convert_markdown_to_html
 
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info('MD2HTML function processing request.')
-
-    try:
-        # Get Markdown data from request body
-        md_content = req.get_body().decode('utf-8')
+    """
+    Convert Markdown data to HTML format.
+    
+    Args:
+        req: Azure Function HTTP request containing Markdown data in body
         
-        if not md_content:
+    Returns:
+        HTTP response with HTML document (200) or error message (400/500)
+        
+    Example:
+        Request body: "# Hello\\n\\nThis is **bold** text"
+        Response: Full HTML document with converted Markdown
+    """
+    context = create_logger_context(req, 'md2html')
+    log_function_start(logging, context, 'MD2HTML function processing request.')
+    
+    try:
+        # Get and validate request size
+        content_length = req.headers.get('Content-Length')
+        if content_length:
+            try:
+                validate_request_size(int(content_length))
+            except ValidationError as e:
+                log_function_error(logging, context, e, 'Request size validation failed')
+                return func.HttpResponse(
+                    f"Validation error: {str(e)}",
+                    status_code=400
+                )
+        
+        # Get Markdown data from request body
+        req_body = req.get_body()
+        validate_request_size(len(req_body))
+        
+        md_content = decode_request_body(req_body)
+        
+        # Validate Markdown content
+        try:
+            validate_markdown_content(md_content)
+        except ValidationError as e:
+            log_function_error(logging, context, e, 'Markdown validation failed')
             return func.HttpResponse(
-                "Markdown content not provided",
+                f"Validation error: {str(e)}",
                 status_code=400
             )
-
+        
         # Convert Markdown to HTML
-        html_content = markdown.markdown(
-            md_content,
-            extensions=['extra', 'codehilite', 'tables']
-        )
+        try:
+            # Check if sanitization is requested via query parameter
+            sanitize = req.params.get('sanitize', 'false').lower() == 'true'
+            full_html = convert_markdown_to_html(md_content, sanitize=sanitize)
+        except ProcessingError as e:
+            log_function_error(logging, context, e, 'Markdown to HTML conversion failed')
+            return func.HttpResponse(
+                f"Conversion error: {str(e)}",
+                status_code=500
+            )
         
-        # Clean HTML from potentially dangerous tags (optional, for security)
-        # Can be commented out if all HTML tags are needed
-        # html_content = bleach.clean(html_content, tags=['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 
-        #                                                  'strong', 'em', 'ul', 'ol', 'li', 'a', 
-        #                                                  'code', 'pre', 'table', 'thead', 'tbody', 
-        #                                                  'tr', 'td', 'th', 'blockquote'])
-        
-        # Wrap in basic HTML structure
-        full_html = f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Converted Markdown</title>
-    <style>
-        body {{
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            line-height: 1.6;
-        }}
-        code {{
-            background-color: #f4f4f4;
-            padding: 2px 4px;
-            border-radius: 3px;
-        }}
-        pre {{
-            background-color: #f4f4f4;
-            padding: 10px;
-            border-radius: 5px;
-            overflow-x: auto;
-        }}
-        table {{
-            border-collapse: collapse;
-            width: 100%;
-        }}
-        th, td {{
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }}
-        th {{
-            background-color: #f2f2f2;
-        }}
-    </style>
-</head>
-<body>
-{html_content}
-</body>
-</html>"""
+        log_function_success(logging, context, 'MD2HTML function completed successfully')
         
         return func.HttpResponse(
             full_html,
@@ -81,10 +76,21 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             status_code=200
         )
     
-    except Exception as e:
-        logging.error(f'Error converting Markdown to HTML: {str(e)}')
+    except ValidationError as e:
+        log_function_error(logging, context, e, 'Validation error')
+        return func.HttpResponse(
+            f"Validation error: {str(e)}",
+            status_code=400
+        )
+    except ProcessingError as e:
+        log_function_error(logging, context, e, 'Processing error')
         return func.HttpResponse(
             f"Conversion error: {str(e)}",
             status_code=500
         )
-
+    except Exception as e:
+        log_function_error(logging, context, e, 'Unexpected error')
+        return func.HttpResponse(
+            "Internal server error",
+            status_code=500
+        )

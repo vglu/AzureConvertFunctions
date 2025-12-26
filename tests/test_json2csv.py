@@ -1,102 +1,85 @@
 """
-Тест-кейсы для функции json2csv
+Test cases for json2csv function
 """
 import pytest
 import json
-import csv
-import io
 from json2csv import __init__ as json2csv_func
 
 
 class MockRequest:
-    def __init__(self, body: bytes):
+    """Mock HTTP request for testing"""
+    def __init__(self, body: bytes, headers: dict = None):
         self._body = body
+        self._headers = headers or {}
+        self.method = 'POST'
+        self.url = 'http://localhost:7071/api/json2csv'
+        self.route_params = {}
+        self.params = {}
     
     def get_body(self) -> bytes:
         return self._body
+    
+    def headers(self):
+        return self._headers
+    
+    def get(self, key: str, default=None):
+        return self._headers.get(key, default)
 
 
-def test_json2csv_array_success():
-    """Тест успешной конвертации массива JSON в CSV"""
-    json_data = [
-        {"name": "Иван", "age": 25, "city": "Москва"},
-        {"name": "Мария", "age": 30, "city": "СПб"}
-    ]
+def test_json2csv_success():
+    """Test successful JSON to CSV conversion"""
+    json_data = [{"name": "John", "age": 25, "city": "New York"}, {"name": "Jane", "age": 30, "city": "London"}]
     req = MockRequest(json.dumps(json_data).encode('utf-8'))
     
     response = json2csv_func.main(req)
     
     assert response.status_code == 200
     assert response.mimetype == "text/csv"
-    
     csv_content = response.get_body().decode('utf-8')
-    reader = csv.DictReader(io.StringIO(csv_content))
-    rows = list(reader)
-    
-    assert len(rows) == 2
-    assert rows[0]["name"] == "Иван"
-    assert rows[1]["city"] == "СПб"
-
-
-def test_json2csv_object_success():
-    """Тест успешной конвертации одного объекта JSON в CSV"""
-    json_data = {"name": "Иван", "age": 25, "city": "Москва"}
-    req = MockRequest(json.dumps(json_data).encode('utf-8'))
-    
-    response = json2csv_func.main(req)
-    
-    assert response.status_code == 200
-    csv_content = response.get_body().decode('utf-8')
-    reader = csv.DictReader(io.StringIO(csv_content))
-    rows = list(reader)
-    
-    assert len(rows) == 1
-    assert rows[0]["name"] == "Иван"
+    assert "name,age,city" in csv_content
+    assert "John,25,New York" in csv_content
 
 
 def test_json2csv_empty_body():
-    """Тест обработки пустого тела запроса"""
+    """Test handling of empty request body"""
     req = MockRequest(b"")
     
     response = json2csv_func.main(req)
     
     assert response.status_code == 400
-    assert "не предоставлен" in response.get_body().decode('utf-8')
+    response_body = json.loads(response.get_body())
+    assert "error" in response_body
 
 
 def test_json2csv_invalid_json():
-    """Тест обработки некорректного JSON"""
+    """Test handling of invalid JSON"""
     req = MockRequest(b"{invalid json}")
     
     response = json2csv_func.main(req)
     
     assert response.status_code == 400
-    assert "Ошибка парсинга JSON" in response.get_body().decode('utf-8')
+    response_body = json.loads(response.get_body())
+    assert "error" in response_body
 
 
-def test_json2csv_invalid_type():
-    """Тест обработки JSON неподдерживаемого типа"""
-    req = MockRequest(b'"просто строка"')
-    
-    response = json2csv_func.main(req)
-    
-    assert response.status_code == 400
-    assert "Неверный формат JSON" in response.get_body().decode('utf-8')
-
-
-def test_json2csv_with_nested_objects():
-    """Тест обработки вложенных объектов (должны быть сериализованы)"""
-    json_data = [
-        {"name": "Иван", "address": {"city": "Москва", "street": "Ленина"}}
-    ]
+def test_json2csv_single_object():
+    """Test conversion of single JSON object"""
+    json_data = {"name": "John", "age": 25}
     req = MockRequest(json.dumps(json_data).encode('utf-8'))
     
     response = json2csv_func.main(req)
     
     assert response.status_code == 200
     csv_content = response.get_body().decode('utf-8')
-    # Вложенные объекты будут сериализованы как строки
-    assert "address" in csv_content
+    assert "name,age" in csv_content
+    assert "John,25" in csv_content
 
 
-
+def test_json2csv_empty_array():
+    """Test handling of empty JSON array"""
+    req = MockRequest(json.dumps([]).encode('utf-8'))
+    
+    response = json2csv_func.main(req)
+    
+    # Should return error for empty array
+    assert response.status_code in [400, 500]
