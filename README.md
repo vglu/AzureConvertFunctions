@@ -1,112 +1,112 @@
 # Azure Convert Functions
 
-Набор Azure Functions для конвертации различных форматов данных, реализованный на Python.
+A set of Azure Functions for converting various data formats, implemented in Python.
 
-## Быстрый старт
+## Quick Start
 
-- [Установка и настройка](INSTALL.md)
-- [Развертывание на Azure](AZURE_DEPLOYMENT.md)
-- [Решение проблем](TROUBLESHOOTING.md)
-- [Спецификация проекта](spec/README.md)
+- [Installation and Setup](INSTALL.md)
+- [Azure Deployment](AZURE_DEPLOYMENT.md)
+- [Troubleshooting](TROUBLESHOOTING.md)
+- [Project Specification](spec/README.md)
 
-## Функции
+## Functions
 
 ### 1. CSV2JSON
-Конвертирует CSV данные в JSON формат.
+Converts CSV data to JSON format.
 
 **Endpoint:** `POST /api/csv2json`
 
 **Query Parameters:**
-- `code` (optional) - код авторизации Azure Function
+- `code` (optional) - Azure Function authorization code
 
-**Request Body:** CSV данные в виде строки
+**Request Body:** CSV data as string
 
-**Response:** JSON массив объектов
+**Response:** JSON array of objects
 
-**Пример:**
+**Example:**
 ```bash
 curl -X POST "http://localhost:7071/api/csv2json?code=your-code" \
   -H "Content-Type: text/csv" \
   -d "name,age,city
-Иван,25,Москва
-Мария,30,СПб"
+John,25,New York
+Jane,30,London"
 ```
 
 ### 2. HTML2PDF
-Конвертирует HTML в PDF документ.
+Converts HTML to PDF document.
 
 **Endpoint:** `POST /api/html2pdf`
 
 **Query Parameters:**
-- `code` (optional) - код авторизации Azure Function
+- `code` (optional) - Azure Function authorization code
 
-**Request Body:** HTML данные в виде строки
+**Request Body:** HTML data as string
 
-**Response:** PDF файл в бинарном формате
+**Response:** PDF file in binary format
 
-**Пример:**
+**Example:**
 ```bash
 curl -X POST "http://localhost:7071/api/html2pdf?code=your-code" \
   -H "Content-Type: text/html" \
-  -d "<html><body><h1>Привет</h1></body></html>"
+  -d "<html><body><h1>Hello</h1></body></html>"
 ```
 
 ### 3. DBF2JSON
-Конвертирует DBF (dBase) файл в JSON формат.
+Converts DBF (dBase) file to JSON format.
 
 **Endpoint:** `POST /api/dbf2json`
 
 **Query Parameters:**
-- `code` (optional) - код авторизации Azure Function
+- `code` (optional) - Azure Function authorization code
 
-**Request Body:** DBF файл в бинарном формате
+**Request Body:** DBF file in binary format
 
-**Content-Type:** `application/x-dbf` или `application/octet-stream`
+**Content-Type:** `application/x-dbf` or `application/octet-stream`
 
-**Response:** JSON массив объектов
+**Response:** JSON array of objects
 
-**Пример:**
+**Example:**
 ```bash
-# Загрузить DBF файл
+# Upload DBF file
 curl -X POST "http://localhost:7071/api/dbf2json?code=your-code" \
   -H "Content-Type: application/x-dbf" \
   --data-binary "@data.dbf"
 ```
 
-**Примечание:** Функция принимает DBF файл в бинарном формате. Поддерживаются форматы dBASE III, dBASE IV, FoxPro.
+**Note:** The function accepts DBF file in binary format. Supports dBASE III, dBASE IV, FoxPro formats.
 
 ### 4. JSON2CSV
-Конвертирует JSON данные в CSV формат.
+Converts JSON data to CSV format.
 
 **Endpoint:** `POST /api/json2csv`
 
 **Query Parameters:**
-- `code` (optional) - код авторизации Azure Function
+- `code` (optional) - Azure Function authorization code
 
-**Request Body:** JSON объект или массив объектов
+**Request Body:** JSON object or array of objects
 
-**Response:** CSV данные
+**Response:** CSV data
 
-**Пример:**
+**Example:**
 ```bash
 curl -X POST "http://localhost:7071/api/json2csv?code=your-code" \
   -H "Content-Type: application/json" \
-  -d '[{"name":"Иван","age":25},{"name":"Мария","age":30}]'
+  -d '[{"name":"John","age":25},{"name":"Jane","age":30}]'
 ```
 
 ### 5. MD2HTML
-Конвертирует Markdown в HTML.
+Converts Markdown to HTML.
 
 **Endpoint:** `POST /api/md2html`
 
 **Query Parameters:**
-- `code` (optional) - код авторизации Azure Function
+- `code` (optional) - Azure Function authorization code
 
-**Request Body:** Markdown данные в виде строки
+**Request Body:** Markdown data as string
 
-**Response:** Полный HTML документ со стилями
+**Response:** Full HTML document with styles
 
-**Пример:**
+**Example:**
 ```bash
 curl -X POST "http://localhost:7071/api/md2html?code=your-code" \
   -H "Content-Type: text/markdown" \
@@ -114,167 +114,167 @@ curl -X POST "http://localhost:7071/api/md2html?code=your-code" \
 ```
 
 ### 6. URL2PDF
-Конвертирует веб-страницу по URL в PDF документ. Поддерживает JavaScript рендеринг через Playwright.
+Converts a web page by URL to PDF document. Supports JavaScript rendering via Playwright.
 
 **Endpoint:** `POST /api/url2pdf`
 
 **Query Parameters:**
-- `code` (optional) - код авторизации Azure Function
+- `code` (optional) - Azure Function authorization code
 
-**Request Body:** URL в виде строки
+**Request Body:** URL as string
 
-**Response:** PDF файл в бинарном формате
+**Response:** PDF file in binary format
 
-**Пример:**
+**Example:**
 ```bash
 curl -X POST "http://localhost:7071/api/url2pdf?code=your-code" \
   -H "Content-Type: text/plain" \
   -d "https://example.com"
 ```
 
-**Примечание:** Для страниц с динамическим контентом (JavaScript) требуется установка Playwright и браузеров:
+**Note:** For pages with dynamic content (JavaScript), Playwright and browsers installation is required:
 ```powershell
 playwright install chromium
 ```
 
 ### 7. URL2JPG
-Создает скриншот веб-страницы по URL и возвращает JPG изображение. Использует Playwright для рендеринга JavaScript.
+Creates a screenshot of a web page by URL and returns JPG image. Uses Playwright for JavaScript rendering.
 
 **Endpoint:** `POST /api/url2jpg`
 
-**Request Body:** URL в виде строки
+**Request Body:** URL as string
 
 **Query Parameters:**
-- `code` (optional) - код авторизации Azure Function
-- `width` (optional) - ширина скриншота в пикселях (по умолчанию: 1920)
-- `height` (optional) - высота скриншота в пикселях (по умолчанию: 1080)
+- `code` (optional) - Azure Function authorization code
+- `width` (optional) - screenshot width in pixels (default: 1920)
+- `height` (optional) - screenshot height in pixels (default: 1080)
 
-**Response:** JPG изображение в бинарном формате
+**Response:** JPG image in binary format
 
-**Пример:**
+**Example:**
 ```bash
 curl -X POST "http://localhost:7071/api/url2jpg?code=your-code&width=1920&height=1080" \
   -H "Content-Type: text/plain" \
   -d "https://example.com"
 ```
 
-**Примечание:** Требуется установка Playwright и браузеров:
+**Note:** Playwright and browsers installation is required:
 ```powershell
 playwright install chromium
 ```
 
-## Swagger/OpenAPI Документация
+## Swagger/OpenAPI Documentation
 
-API документация доступна через Swagger UI:
+API documentation is available through Swagger UI:
 
 **Endpoint:** `GET /api/swagger`
 
-Откройте в браузере: `http://localhost:7071/api/swagger` для просмотра интерактивной документации API.
+Open in browser: `http://localhost:7071/api/swagger` to view interactive API documentation.
 
-Swagger JSON спецификация доступна по адресу: `GET /api/swagger/swagger.json`
+Swagger JSON specification is available at: `GET /api/swagger/swagger.json`
 
-## Установка и запуск
+## Installation and Running
 
-### Требования
-- Python 3.10+ (рекомендуется 3.11, Python 3.9 достиг EOL)
+### Requirements
+- Python 3.10+ (3.11 recommended, Python 3.9 reached EOL)
 - Azure Functions Core Tools
 
-**Поддерживаемые платформы:**
+**Supported platforms:**
 - Windows
 - Linux (Ubuntu/Debian)
 - macOS
 
-### Установка зависимостей
+### Installing Dependencies
 
-**ВАЖНО:** Azure Functions Core Tools использует системный Python, а не виртуальное окружение!
+**IMPORTANT:** Azure Functions Core Tools uses system Python, not virtual environment!
 
-**Если виртуальное окружение активировано, сначала деактивируйте его:**
+**If virtual environment is activated, deactivate it first:**
 
 ```powershell
 deactivate
 ```
 
-**Затем установите зависимости в системный Python:**
+**Then install dependencies in system Python:**
 
 ```powershell
-# Установить все зависимости
+# Install all dependencies
 python -m pip install -r requirements.txt
 
-# Установить браузеры для Playwright (для url2pdf и url2jpg с поддержкой JavaScript)
+# Install browsers for Playwright (for url2pdf and url2jpg with JavaScript support)
 playwright install chromium
 
-# На Linux также требуется установить системные зависимости:
+# On Linux, system dependencies are also required:
 # Ubuntu/Debian:
 # sudo apt-get update
 # sudo apt-get install -y libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2
 ```
 
-**Проверка установки:**
+**Verification:**
 
 ```powershell
-# Проверить, что используется системный Python
+# Check that system Python is being used
 python -c "import sys; print(sys.executable)"
 
-# Проверить установку модулей
+# Check module installation
 python -c "import pandas, markdown, xhtml2pdf, requests; print('All modules installed!')"
 
-# Проверить Playwright (опционально)
+# Check Playwright (optional)
 python -c "from playwright.sync_api import sync_playwright; print('Playwright available!')"
 ```
 
-**Альтернатива - виртуальное окружение:**
+**Alternative - virtual environment:**
 
-Если хотите использовать виртуальное окружение, активируйте его и запускайте `func start` из того же терминала:
+If you want to use a virtual environment, activate it and run `func start` from the same terminal:
 
 ```powershell
 .venv\Scripts\Activate.ps1
 func start
 ```
 
-### Локальный запуск
+### Local Run
 
-**Перед запуском создайте `local.settings.json`:**
+**Before running, create `local.settings.json`:**
 
 ```powershell
-# Скопировать пример
+# Copy example
 Copy-Item local.settings.json.example local.settings.json
 ```
 
-Затем запустите функции:
+Then start the functions:
 
 ```bash
 func start
 ```
 
-**Если возникает ошибка с grpc**, см. раздел [Решение проблем](#решение-проблем) ниже или запустите:
+**If you encounter a grpc error**, see the [Troubleshooting](#troubleshooting) section below or run:
 
 ```powershell
 .\fix-grpc-issue.ps1
 ```
 
-### Запуск тестов
+### Running Tests
 
 ```bash
 pip install pytest
 pytest
 ```
 
-## Зависимости
+## Dependencies
 
-- `azure-functions` - SDK для Azure Functions
-- `pandas` - для работы с CSV и данными
-- `markdown` - для конвертации Markdown в HTML
-- `xhtml2pdf` - для конвертации HTML в PDF (кроссплатформенная)
-- `bleach` - для очистки HTML (опционально)
-- `requests` - для загрузки HTML с URL
-- `playwright` - для рендеринга JavaScript на веб-страницах (для url2pdf и url2jpg)
-- `dbfread` - для чтения DBF (dBase) файлов
+- `azure-functions` - SDK for Azure Functions
+- `pandas` - for working with CSV and data
+- `markdown` - for converting Markdown to HTML
+- `xhtml2pdf` - for converting HTML to PDF (cross-platform)
+- `bleach` - for HTML sanitization (optional)
+- `requests` - for loading HTML from URL
+- `playwright` - for rendering JavaScript on web pages (for url2pdf and url2jpg)
+- `dbfread` - for reading DBF (dBase) files
 
-**Примечание для Linux:**
-- Для работы с PDF нужны системные шрифты (обычно уже установлены: DejaVu Sans, Liberation Sans)
-- Для Playwright требуются системные зависимости (см. инструкции выше)
+**Note for Linux:**
+- For PDF work, system fonts are needed (usually already installed: DejaVu Sans, Liberation Sans)
+- For Playwright, system dependencies are required (see instructions above)
 
-## Структура проекта
+## Project Structure
 
 ```
 .
@@ -305,57 +305,58 @@ pytest
 └── README.md
 ```
 
-## Тестирование
+## Testing
 
-Все функции покрыты тест-кейсами:
+All functions are covered with test cases:
 
-- **test_csv2json.py** - тесты для CSV2JSON конвертации
-- **test_json2csv.py** - тесты для JSON2CSV конвертации
-- **test_md2html.py** - тесты для MD2HTML конвертации
-- **test_html2pdf.py** - тесты для HTML2PDF конвертации
-- **test_swagger.py** - тесты для Swagger UI функции
-- **test_url2pdf.py** - тесты для URL2PDF конвертации (если созданы)
-- **test_url2jpg.py** - тесты для URL2JPG конвертации (если созданы)
+- **test_csv2json.py** - tests for CSV2JSON conversion
+- **test_json2csv.py** - tests for JSON2CSV conversion
+- **test_md2html.py** - tests for MD2HTML conversion
+- **test_html2pdf.py** - tests for HTML2PDF conversion
+- **test_swagger.py** - tests for Swagger UI function
+- **test_url2pdf.py** - tests for URL2PDF conversion (if created)
+- **test_url2jpg.py** - tests for URL2JPG conversion (if created)
 
-Каждый тест-файл содержит:
-- Тесты успешной конвертации
-- Тесты обработки ошибок
-- Тесты граничных случаев
-- Тесты со специальными символами
+Each test file contains:
+- Successful conversion tests
+- Error handling tests
+- Edge case tests
+- Special character tests
 
-## Решение проблем
+## Troubleshooting
 
-### Ошибка: cannot import name 'cygrpc' from 'grpc._cython'
+### Error: cannot import name 'cygrpc' from 'grpc._cython'
 
-Это известная проблема Azure Functions Core Tools на Windows. Решения:
+This is a known issue with Azure Functions Core Tools on Windows. Solutions:
 
-1. **Обновить Azure Functions Core Tools:**
+1. **Update Azure Functions Core Tools:**
    ```powershell
    choco upgrade azure-functions-core-tools
-   # или
+   # or
    npm install -g azure-functions-core-tools@latest
    ```
 
-2. **Использовать виртуальное окружение:**
+2. **Use virtual environment:**
    ```powershell
    .venv\Scripts\Activate.ps1
    func start
    ```
 
-3. **Запустить скрипт диагностики:**
+3. **Run diagnostic script:**
    ```powershell
    .\fix-grpc-issue.ps1
    ```
 
-Подробные инструкции см. в [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
+For detailed instructions, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
 
-## Развертывание в Azure
+## Azure Deployment
 
-1. Создайте Azure Function App
-2. Установите зависимости через Kudu или SSH
-3. Разверните функции через Azure CLI или Visual Studio Code
+1. Create Azure Function App
+2. Install dependencies via Kudu or SSH
+3. Deploy functions via Azure CLI or Visual Studio Code
 
 ```bash
 func azure functionapp publish <your-function-app-name>
 ```
 
+For detailed deployment instructions, see [AZURE_DEPLOYMENT.md](AZURE_DEPLOYMENT.md)
